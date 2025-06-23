@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Layout from "./pages/Layout";
 import NotFound from "./pages/NotFound";
+import Count from "./pages/test/Count";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
               <Route path="home" element={<Home />} />
               <Route path="about" element={<About />} />
               <Route path="*" element={<NotFound />} />
+              <Route path="test" element={<Count />} />
             </Route>
           </Routes>
         </BrowserRouter>

@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useTasks } from "../hooks/useTasks";
+import axiosTask from "../utils/axiosTask";
 
 export default function EditTask() {
   const { editTask, tasks } = useTasks();
@@ -23,7 +24,7 @@ export default function EditTask() {
   const { id } = useParams();
   const nav = useNavigate();
   useEffect(() => {
-    const task = tasks.find((task) => task.id === id);
+    const task = tasks.find((task) => task.id === Number(id));
     if (task) {
       setInput(task.title);
     } else {
@@ -45,10 +46,14 @@ export default function EditTask() {
     );
   }
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
     if (!input.trim()) {
       setError("value is blank!");
     } else {
+      await axiosTask.put(`tasks/${id}`, {
+        title: input,
+        comment: "",
+      });
       editTask(id, input);
       nav("/");
     }

@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import {
   ADD_TASK,
   DELETE_TASK,
@@ -10,12 +9,11 @@ import {
 export const initialState = [];
 
 export const taskReducer = (state, action) => {
-  console.log(state, action);
   switch (action.type) {
     case INIT_TASK:
       return [...action.tasks];
     case ADD_TASK:
-      return [...state, { id: uuidv4(), title: action.title, archived: false }];
+      return [...state, action.task];
     case DELETE_TASK:
       return state.filter((task) => action.id != task.id);
     case EDIT_TASK:
@@ -28,7 +26,7 @@ export const taskReducer = (state, action) => {
     case TOGGLE_TASK:
       return state.map((task) => {
         if (task.id === action.id) {
-          return { ...task, archived: !task.archived };
+          return { ...task, status: !task.status };
         }
         return task;
       });

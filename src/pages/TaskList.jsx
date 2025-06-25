@@ -14,34 +14,51 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useTasks } from "../hooks/useTasks";
+import axiosTask from "../utils/axiosTask";
 
 export default function TaskList() {
-  const localTasks = JSON.parse(localStorage.getItem("tasks"));
-  const { delTask, addTask, toggleTask, initTask, tasks } =
-    useTasks(localTasks);
+  const { delTask, addTask, toggleTask, initTask, tasks } = useTasks([]);
   const [input, setInput] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const filter = searchParams.get("filter") || "all";
 
   useEffect(() => {
-    if (localTasks) {
-      initTask(localTasks);
-    }
+    const fentchTasks = async () => {
+      const taskList = await axiosTask.get("tasks");
+      initTask(taskList);
+    };
+    fentchTasks();
   }, []);
 
   const nav = useNavigate();
-  const handleAdd = () => {
-    addTask(input);
+  const handleAdd = async () => {
+    const newTask = await axiosTask.post("tasks", {
+      title: input,
+      comment: "",
+      status: false,
+    });
+    addTask(newTask);
     setInput("");
   };
 
-  const handleDel = (id) => delTask(id);
-  const handleToggle = (id) => toggleTask(id);
+  const handleDel = async (id) => {
+    await axiosTask.delete(`tasks/${id}`);
+    delTask(id);
+  };
+
+  const handleToggle = async (id) => {
+    await axiosTask.patch(`tasks/${id}/toggle`);
+    toggleTask(id);
+  };
 
   const filterList = tasks.filter((task) => {
-    if (filter == "active") return !task.archived;
-    if (filter == "archived") return task.archived;
-    return true;
+    if (filter == "active") {
+      return !task.status;
+    } else if (filter == "archived") {
+      return task.status;
+    } else {
+      return true;
+    }
   });
 
   return (
@@ -84,14 +101,14 @@ export default function TaskList() {
             p={4}
             borderWidth="1px"
             borderRadius="md"
-            bg={task.archived ? "gray.100" : "white"}
+            bg={task.status ? "gray.100" : "white"}
             boxShadow="sm"
           >
             <Flex align="center">
               <Box>
                 <Heading size="sm">{task.title}</Heading>
-                <Badge mt={1} colorScheme={task.archived ? "gray" : "green"}>
-                  {task.archived ? "归档済み" : "作業中"}
+                <Badge mt={1} colorScheme={task.status ? "gray" : "green"}>
+                  {task.status ? "归档済み" : "作業中"}
                 </Badge>
               </Box>
               <Spacer />
@@ -102,14 +119,14 @@ export default function TaskList() {
                 <Button
                   size="sm"
                   colorScheme="red"
-                  onClick={() => delTask(task.id)}
+                  onClick={() => handleDel(task.id)}
                 >
                   削除
                 </Button>
                 <Button
                   size="sm"
                   colorScheme="yellow"
-                  onClick={() => toggleTask(task.id)}
+                  onClick={() => handleToggle(task.id)}
                 >
                   トグル
                 </Button>
